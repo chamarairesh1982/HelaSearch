@@ -61,7 +61,29 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// Custom semantic colors for Buddhist/Sinhala theme
+				saffron: {
+					DEFAULT: 'hsl(var(--saffron))',
+					light: 'hsl(var(--saffron-light))',
+					dark: 'hsl(var(--saffron-dark))'
+				},
+				dharma: {
+					DEFAULT: 'hsl(var(--dharma-blue))',
+					light: 'hsl(var(--dharma-blue-light))'
+				},
+				earth: 'hsl(var(--earth-brown))',
+				wisdom: 'hsl(var(--wisdom-gold))'
+			},
+			backgroundImage: {
+				'gradient-primary': 'var(--gradient-primary)',
+				'gradient-wisdom': 'var(--gradient-wisdom)',
+				'gradient-subtle': 'var(--gradient-subtle)'
+			},
+			boxShadow: {
+				'saffron': 'var(--shadow-saffron)',
+				'dharma': 'var(--shadow-dharma)',
+				'soft': 'var(--shadow-soft)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
