@@ -14,13 +14,189 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      text_chunks: {
+        Row: {
+          content: string
+          created_at: string
+          embedding: string | null
+          end_pos: number
+          file_id: string
+          id: string
+          start_pos: number
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          embedding?: string | null
+          end_pos: number
+          file_id: string
+          id?: string
+          start_pos: number
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          embedding?: string | null
+          end_pos?: number
+          file_id?: string
+          id?: string
+          start_pos?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "text_chunks_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "text_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      text_files: {
+        Row: {
+          chunk_count: number
+          content: string
+          created_at: string
+          id: string
+          name: string
+          original_name: string
+          size: number
+          updated_at: string
+        }
+        Insert: {
+          chunk_count?: number
+          content: string
+          created_at?: string
+          id?: string
+          name: string
+          original_name: string
+          size: number
+          updated_at?: string
+        }
+        Update: {
+          chunk_count?: number
+          content?: string
+          created_at?: string
+          id?: string
+          name?: string
+          original_name?: string
+          size?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      binary_quantize: {
+        Args: { "": string } | { "": unknown }
+        Returns: unknown
+      }
+      halfvec_avg: {
+        Args: { "": number[] }
+        Returns: unknown
+      }
+      halfvec_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      halfvec_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      halfvec_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
+      hnsw_bit_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnsw_halfvec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnsw_sparsevec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnswhandler: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflat_bit_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflat_halfvec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflathandler: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      l2_norm: {
+        Args: { "": unknown } | { "": unknown }
+        Returns: number
+      }
+      l2_normalize: {
+        Args: { "": string } | { "": unknown } | { "": unknown }
+        Returns: unknown
+      }
+      search_chunks: {
+        Args: {
+          match_count?: number
+          match_threshold?: number
+          query_embedding: string
+        }
+        Returns: {
+          content: string
+          end_pos: number
+          file_id: string
+          id: string
+          similarity: number
+          start_pos: number
+        }[]
+      }
+      sparsevec_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      sparsevec_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      sparsevec_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
+      vector_avg: {
+        Args: { "": number[] }
+        Returns: string
+      }
+      vector_dims: {
+        Args: { "": string } | { "": unknown }
+        Returns: number
+      }
+      vector_norm: {
+        Args: { "": string }
+        Returns: number
+      }
+      vector_out: {
+        Args: { "": string }
+        Returns: unknown
+      }
+      vector_send: {
+        Args: { "": string }
+        Returns: string
+      }
+      vector_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
