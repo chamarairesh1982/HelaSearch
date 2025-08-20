@@ -4,30 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { FileText, Calendar, Hash, HardDrive, RefreshCw } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-
-interface FileInfo {
-  path: string;
-  name: string;
-  size: number;
-  lastModified: string;
-  chunkCount: number;
-}
+import { useFiles } from "@/hooks/useFiles";
 
 interface FilesDashboardProps {
-  files: FileInfo[];
-  isLoading?: boolean;
-  onRefresh?: () => void;
-  totalChunks?: number;
-  indexSize?: number;
+  onReindex?: () => Promise<void>;
+  isReindexing?: boolean;
 }
 
 export function FilesDashboard({ 
-  files, 
-  isLoading, 
-  onRefresh, 
-  totalChunks = 0,
-  indexSize = 0 
+  onReindex, 
+  isReindexing 
 }: FilesDashboardProps) {
+  const { files, isLoading, totalSize, totalChunks, loadFiles } = useFiles();
+  
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 B';
     const k = 1024;
@@ -36,7 +25,12 @@ export function FilesDashboard({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   };
 
-  const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+  const handleRefresh = async () => {
+    if (onReindex) {
+      await onReindex();
+    }
+    await loadFiles();
+  };
 
   if (isLoading) {
     return (
@@ -92,7 +86,7 @@ export function FilesDashboard({
           <div className="flex items-center gap-3">
             <Calendar className="h-8 w-8 text-earth" />
             <div>
-              <p className="text-2xl font-bold text-earth">{formatFileSize(indexSize)}</p>
+              <p className="text-2xl font-bold text-earth">{formatFileSize(totalSize * 0.1)}</p>
               <p className="text-sm text-muted-foreground">සුචිය</p>
             </div>
           </div>
@@ -104,14 +98,15 @@ export function FilesDashboard({
         <div className="p-4 border-b border-border">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-dharma">ගොනු ලැයිස්තුව</h3>
-            {onRefresh && (
+            {handleRefresh && (
               <Button
                 variant="outline"
                 size="sm"
-                onClick={onRefresh}
+                onClick={handleRefresh}
+                disabled={isReindexing}
                 className="border-dharma/30 hover:bg-dharma/10"
               >
-                <RefreshCw className="w-4 h-4 mr-2" />
+                <RefreshCw className={`w-4 h-4 mr-2 ${isReindexing ? 'animate-spin' : ''}`} />
                 නවීකරණය
               </Button>
             )}
@@ -138,13 +133,13 @@ export function FilesDashboard({
                       <h4 className="font-medium text-foreground">
                         {file.name}
                       </h4>
-                      <p className="text-sm text-muted-foreground">
-                        {file.path}
-                      </p>
+                       <p className="text-sm text-muted-foreground">
+                         {file.original_name}
+                       </p>
                     </div>
                     <div className="flex gap-2 ml-4">
                       <Badge variant="outline" className="border-saffron/30 text-saffron">
-                        {file.chunkCount} කැබලි
+                        {file.chunk_count} කැබලි
                       </Badge>
                       <Badge variant="outline" className="border-muted-foreground/30">
                         {formatFileSize(file.size)}
@@ -155,18 +150,18 @@ export function FilesDashboard({
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <span>
                       අවසන් වරට වෙනස් කළේ: {' '}
-                      {formatDistanceToNow(new Date(file.lastModified), { addSuffix: true })}
+                      {formatDistanceToNow(new Date(file.updated_at), { addSuffix: true })}
                     </span>
                     
                     <div className="flex items-center gap-2">
                       <span>කැබලි ප්‍රගතිය:</span>
                       <div className="w-20">
                         <Progress 
-                          value={(file.chunkCount / Math.max(totalChunks, 1)) * 100} 
+                          value={(file.chunk_count / Math.max(totalChunks, 1)) * 100} 
                           className="h-1"
                         />
                       </div>
-                      <span>{Math.round((file.chunkCount / Math.max(totalChunks, 1)) * 100)}%</span>
+                      <span>{Math.round((file.chunk_count / Math.max(totalChunks, 1)) * 100)}%</span>
                     </div>
                   </div>
                 </div>
