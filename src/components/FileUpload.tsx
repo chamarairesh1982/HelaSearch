@@ -91,13 +91,43 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
           f.id === uploadFile.id ? { ...f, progress: 70 } : f
         ));
 
-        // Insert chunks
-        const chunkInserts = chunks.map(chunk => ({
-          file_id: fileRecord.id,
-          content: chunk.content,
-          start_pos: chunk.start,
-          end_pos: chunk.end
-        }));
+        // Generate embeddings and insert chunks
+        setFiles(prev => prev.map(f => 
+          f.id === uploadFile.id ? { ...f, progress: 80 } : f
+        ));
+
+        const chunkInserts = [];
+        for (let i = 0; i < chunks.length; i++) {
+          const chunk = chunks[i];
+          
+          // Generate embedding for this chunk
+          let embedding = null;
+          try {
+            const { data: embeddingData, error: embeddingError } = await supabase.functions.invoke('generate-embedding', {
+              body: { text: chunk.content }
+            });
+            
+            if (!embeddingError && embeddingData?.embedding) {
+              embedding = embeddingData.embedding;
+            }
+          } catch (error) {
+            console.warn('Failed to generate embedding for chunk:', error);
+          }
+
+          chunkInserts.push({
+            file_id: fileRecord.id,
+            content: chunk.content,
+            start_pos: chunk.start,
+            end_pos: chunk.end,
+            embedding: embedding
+          });
+
+          // Update progress for embedding generation
+          const embeddingProgress = 80 + (i / chunks.length) * 15;
+          setFiles(prev => prev.map(f => 
+            f.id === uploadFile.id ? { ...f, progress: embeddingProgress } : f
+          ));
+        }
 
         const { error: chunksError } = await supabase
           .from('text_chunks')
@@ -258,7 +288,7 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
                   
                   {uploadFile.status === 'processing' && (
                     <p className="text-xs text-muted-foreground">
-                      පාඨය කොටස් කරමින්...
+                      {uploadFile.progress < 80 ? 'පාඨය කොටස් කරමින්...' : 'embedding ජනනය කරමින්...'}
                     </p>
                   )}
                 </div>
