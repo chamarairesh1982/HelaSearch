@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, ReactNode } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,20 @@ interface SearchResultsProps {
 export function SearchResults({ result, isLoading, onExpandContext }: SearchResultsProps) {
   const [expandedSnippets, setExpandedSnippets] = useState<Set<string>>(new Set());
   const [loadingContext, setLoadingContext] = useState<Set<string>>(new Set());
+
+  const highlightText = (text: string, query: string): ReactNode => {
+    if (!query) return text;
+    const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const terms = query
+      .split(/\s+/)
+      .filter(Boolean)
+      .map(escapeRegExp);
+    if (terms.length === 0) return text;
+    const pattern = new RegExp(`(${terms.join("|")})`, "gu");
+    return text.split(pattern).map((part, i) =>
+      i % 2 === 1 ? <mark key={i}>{part}</mark> : part
+    );
+  };
 
   if (isLoading) {
     return (
@@ -173,10 +187,12 @@ export function SearchResults({ result, isLoading, onExpandContext }: SearchResu
                     <div className="space-y-3">
                       <div className="prose prose-sm max-w-none">
                         <p className="text-foreground leading-relaxed">
-                          {isExpanded && snippet.expandedText 
-                            ? snippet.expandedText 
-                            : snippet.text
-                          }
+                          {highlightText(
+                            isExpanded && snippet.expandedText
+                              ? snippet.expandedText
+                              : snippet.text,
+                            result.query
+                          )}
                         </p>
                       </div>
 

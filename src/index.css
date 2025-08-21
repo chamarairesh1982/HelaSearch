@@ -140,3 +140,9 @@ All colors MUST be HSL.
     -webkit-font-smoothing: antialiased;
   }
 }
+
+@layer components {
+  mark {
+    @apply bg-saffron-light/40 dark:bg-saffron-dark/60 text-foreground rounded px-1;
+  }
+}
