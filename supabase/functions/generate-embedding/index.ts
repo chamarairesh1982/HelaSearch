@@ -29,14 +29,14 @@ serve(async (req) => {
     if (!deepseekApiKey) {
       return new Response(
         JSON.stringify({ error: 'DeepSeek API key not configured' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
     }
 
-    // Call DeepSeek API for embeddings
+    // Call DeepSeek API for multilingual embeddings
     const response = await fetch('https://api.deepseek.com/v1/embeddings', {
       method: 'POST',
       headers: {
@@ -45,7 +45,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         input: text,
-        model: 'deepseek-embedder',
+        model: 'deepseek-embedding-1',
       }),
     })
 
@@ -53,9 +53,9 @@ serve(async (req) => {
       console.error('DeepSeek API error:', response.status, await response.text())
       return new Response(
         JSON.stringify({ error: 'Failed to generate embedding' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
     }
