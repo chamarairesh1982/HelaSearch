@@ -13,6 +13,7 @@ interface SearchSettings {
   strict: boolean;
   resultCount: number;
   useLlm: boolean;
+  expandQuery: boolean;
 }
 
 interface SearchInterfaceProps {
@@ -27,7 +28,8 @@ export function SearchInterface({ onSearch, onReindex, isLoading, isReindexing }
   const [settings, setSettings] = useState<SearchSettings>({
     strict: true,
     resultCount: 8,
-    useLlm: false
+    useLlm: false,
+    expandQuery: true
   });
   const [showSettings, setShowSettings] = useState(false);
   const { toast } = useToast();
@@ -159,6 +161,24 @@ export function SearchInterface({ onSearch, onReindex, isLoading, isReindexing }
                 </div>
               </div>
 
+              <div className="flex items-center space-x-3">
+                <Switch
+                  id="query-expansion"
+                  checked={settings.expandQuery}
+                  onCheckedChange={(checked) =>
+                    setSettings(prev => ({ ...prev, expandQuery: checked }))
+                  }
+                />
+                <div className="space-y-1">
+                  <Label htmlFor="query-expansion" className="text-sm font-medium">
+                    සෙවුම් විස්තාරය
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    සමානාර්ථ පද මගින් සෙවීම් පුළුල් කරන්න
+                  </p>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label className="text-sm font-medium">ප්‍රතිඵල ගණන</Label>
                 <Select
@@ -190,6 +210,9 @@ export function SearchInterface({ onSearch, onReindex, isLoading, isReindexing }
               </Badge>
               <Badge variant="outline" className="border-saffron/30 text-saffron">
                 LLM: {settings.useLlm ? "සක්‍රිය" : "අක්‍රිය"}
+              </Badge>
+              <Badge variant="outline" className="border-dharma/30 text-dharma">
+                විස්තාරය: {settings.expandQuery ? "සක්‍රිය" : "අක්‍රිය"}
               </Badge>
             </div>
           </div>

@@ -60,6 +60,10 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## Query expansion
+
+The search service can automatically expand Sinhala queries by normalizing text, applying a simple stemmer and adding synonyms from a small lexicon. Expanded terms are merged with the original query before embeddings are generated. You can enable or disable this behaviour in the search settings panel.
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/373d3658-64c1-430f-b5fb-2dbb5615645a) and click on Share -> Publish.

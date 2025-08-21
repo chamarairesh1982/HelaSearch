@@ -6,6 +6,7 @@ interface SearchSettings {
   strict: boolean;
   resultCount: number;
   useLlm: boolean;
+  expandQuery: boolean;
 }
 
 export function useSearch() {
@@ -18,7 +19,8 @@ export function useSearch() {
       const searchResult = await searchDocuments(query, {
         limit: settings.resultCount,
         strict: settings.strict,
-        useLlm: settings.useLlm
+        useLlm: settings.useLlm,
+        expandQuery: settings.expandQuery
       });
       setResult(searchResult);
     } catch (error) {
