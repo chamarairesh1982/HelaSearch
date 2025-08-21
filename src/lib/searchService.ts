@@ -2,19 +2,30 @@ import { supabase } from './supabase';
 import { SearchResult, SearchSnippet, TextFile, TextChunk } from './supabase';
 import { expandContext } from './textProcessing';
 
-// Simple embedding service using Supabase Edge Functions
+// Cache to avoid recomputing embeddings for identical text
+const embeddingCache = new Map<string, number[]>();
+const EMBEDDING_DIMENSION = 1024; // deepseek-embedding-1 output size
+
+// Simple embedding service using Supabase Edge Functions backed by DeepSeek
 async function getEmbedding(text: string): Promise<number[]> {
+  if (embeddingCache.has(text)) {
+    return embeddingCache.get(text)!;
+  }
+
   try {
     const { data, error } = await supabase.functions.invoke('generate-embedding', {
       body: { text }
     });
-    
+
     if (error) throw error;
+    embeddingCache.set(text, data.embedding);
     return data.embedding;
   } catch (error) {
     console.error('Error generating embedding:', error);
     // Return a dummy embedding for development
-    return Array(384).fill(0).map(() => Math.random() - 0.5);
+    const dummy = Array(EMBEDDING_DIMENSION).fill(0).map(() => Math.random() - 0.5);
+    embeddingCache.set(text, dummy);
+    return dummy;
   }
 }
 
@@ -56,7 +67,9 @@ export async function searchDocuments(
     }
     
     // Get file information for the chunks
-    const fileIds = [...new Set(chunks.map((chunk: any) => chunk.file_id))];
+    const typedChunks = (chunks || []) as (TextChunk & { similarity?: number })[];
+
+    const fileIds = [...new Set(typedChunks.map(chunk => chunk.file_id))];
     const { data: files } = await supabase
       .from('text_files')
       .select('*')
@@ -65,9 +78,9 @@ export async function searchDocuments(
     const fileMap = new Map(files?.map(file => [file.id, file]) || []);
     
     // Convert to snippets
-    const snippets: SearchSnippet[] = chunks
+    const snippets: SearchSnippet[] = typedChunks
       .slice(0, limit)
-      .map((chunk: any) => {
+      .map(chunk => {
         const file = fileMap.get(chunk.file_id);
         return {
           docId: chunk.id,
