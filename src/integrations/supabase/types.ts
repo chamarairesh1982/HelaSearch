@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       text_chunks: {
         Row: {
           content: string
@@ -23,6 +47,7 @@ export type Database = {
           file_id: string
           id: string
           start_pos: number
+          user_id: string | null
         }
         Insert: {
           content: string
@@ -32,6 +57,7 @@ export type Database = {
           file_id: string
           id?: string
           start_pos: number
+          user_id?: string | null
         }
         Update: {
           content?: string
@@ -41,6 +67,7 @@ export type Database = {
           file_id?: string
           id?: string
           start_pos?: number
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -62,6 +89,7 @@ export type Database = {
           original_name: string
           size: number
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           chunk_count?: number
@@ -72,6 +100,7 @@ export type Database = {
           original_name: string
           size: number
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           chunk_count?: number
@@ -82,6 +111,7 @@ export type Database = {
           original_name?: string
           size?: number
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }

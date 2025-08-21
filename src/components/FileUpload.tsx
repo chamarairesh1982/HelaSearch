@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { chunkText } from '@/lib/textProcessing';
 
@@ -23,6 +24,7 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleFileSelect = (selectedFiles: FileList | null) => {
     if (!selectedFiles) return;
@@ -80,7 +82,8 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
             original_name: uploadFile.file.name,
             size: uploadFile.file.size,
             content: content,
-            chunk_count: chunks.length
+            chunk_count: chunks.length,
+            user_id: user?.id
           })
           .select()
           .single();
@@ -119,7 +122,8 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
             content: chunk.content,
             start_pos: chunk.start,
             end_pos: chunk.end,
-            embedding: embedding
+            embedding: embedding,
+            user_id: user?.id
           });
 
           // Update progress for embedding generation
