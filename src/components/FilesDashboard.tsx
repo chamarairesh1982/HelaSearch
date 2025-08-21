@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { FileText, Calendar, Hash, HardDrive, RefreshCw } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useFiles } from "@/hooks/useFiles";
+import { FileUpload } from "@/components/FileUpload";
 
 interface FilesDashboardProps {
   onReindex?: () => Promise<void>;
@@ -93,6 +94,9 @@ export function FilesDashboard({
         </Card>
       </div>
 
+      {/* File Upload Section */}
+      <FileUpload onUploadComplete={loadFiles} />
+
       {/* Files List */}
       <Card className="border-dharma/20">
         <div className="p-4 border-b border-border">
@@ -117,10 +121,10 @@ export function FilesDashboard({
           <div className="p-8 text-center">
             <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground">
-              data/ බහාලුමේ .txt ගොනු නොමැත
+              තවම ගොනු අපලෝඩ් කර නැත
             </p>
             <p className="text-sm text-muted-foreground mt-2">
-              ගොනු එකතු කර නවින් කරන්න බොත්තම ක්ලික් කරන්න
+              ඉහත අපලෝඩ් කලාපය භාවිතා කර .txt ගොනු එකතු කරන්න
             </p>
           </div>
         ) : (
@@ -174,12 +178,12 @@ export function FilesDashboard({
       {/* Instructions */}
       <Card className="p-4 bg-gradient-subtle border-saffron/20">
         <div className="space-y-2">
-          <h4 className="font-medium text-saffron">ගොනු එකතු කිරීම</h4>
+          <h4 className="font-medium text-saffron">ගොනු අපලෝඩ් කිරීම</h4>
           <div className="text-sm text-muted-foreground space-y-1">
-            <p>• සිංහල .txt ගොනු data/ බහාලුමට එකතු කරන්න</p>
-            <p>• UTF-8 කේතනය භාවිතා කරන්න</p>
-            <p>• ගොනු එකතු කිරීමෙන් පසු "නවින් කරන්න" ක්ලික් කරන්න</p>
-            <p>• සුචිය ස්වයංක්‍රීයව නැවත සාදනු ලැබේ</p>
+            <p>• ඉහත අපලෝඩ් කලාපයට .txt ගොනු ඇද දමන්න</p>
+            <p>• "ගොනු තෝරන්න" බොත්තම ඔබා ගොනු තෝරන්න</p>
+            <p>• UTF-8 කේතනය සහිත සිංහල ගොනු භාවිතා කරන්න</p>
+            <p>• RAG සෙවීම සඳහා ස්වයංක්‍රීයව embeddings ජනනය වේ</p>
           </div>
         </div>
       </Card>
