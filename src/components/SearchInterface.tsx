@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 interface SearchSettings {
   strict: boolean;
   resultCount: number;
+  useLlm: boolean;
 }
 
 interface SearchInterfaceProps {
@@ -25,7 +26,8 @@ export function SearchInterface({ onSearch, onReindex, isLoading, isReindexing }
   const [query, setQuery] = useState("");
   const [settings, setSettings] = useState<SearchSettings>({
     strict: true,
-    resultCount: 8
+    resultCount: 8,
+    useLlm: false
   });
   const [showSettings, setShowSettings] = useState(false);
   const { toast } = useToast();
@@ -139,6 +141,24 @@ export function SearchInterface({ onSearch, onReindex, isLoading, isReindexing }
                 </div>
               </div>
 
+              <div className="flex items-center space-x-3">
+                <Switch
+                  id="llm-summary"
+                  checked={settings.useLlm}
+                  onCheckedChange={(checked) =>
+                    setSettings(prev => ({ ...prev, useLlm: checked }))
+                  }
+                />
+                <div className="space-y-1">
+                  <Label htmlFor="llm-summary" className="text-sm font-medium">
+                    LLM සාරාංශය
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    OpenAI LLM භාවිතයෙන් සාරාංශයක්
+                  </p>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label className="text-sm font-medium">ප්‍රතිඵල ගණන</Label>
                 <Select
@@ -167,6 +187,9 @@ export function SearchInterface({ onSearch, onReindex, isLoading, isReindexing }
               </Badge>
               <Badge variant="outline" className="border-dharma/30 text-dharma">
                 ප්‍රතිඵල: {settings.resultCount}
+              </Badge>
+              <Badge variant="outline" className="border-saffron/30 text-saffron">
+                LLM: {settings.useLlm ? "සක්‍රිය" : "අක්‍රිය"}
               </Badge>
             </div>
           </div>

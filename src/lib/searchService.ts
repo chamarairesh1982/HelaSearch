@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { SearchResult, SearchSnippet, TextFile, TextChunk } from './supabase';
+import { SearchResult, SearchSnippet, TextChunk } from './supabase';
 import { expandContext } from './textProcessing';
 
 // Cache to avoid recomputing embeddings for identical text
@@ -34,9 +34,10 @@ export async function searchDocuments(
   options: {
     limit?: number;
     strict?: boolean;
+    useLlm?: boolean;
   } = {}
 ): Promise<SearchResult> {
-  const { limit = 8, strict = true } = options;
+  const { limit = 8, strict = true, useLlm = false } = options;
   
   try {
     // Generate embedding for the query
@@ -95,14 +96,8 @@ export async function searchDocuments(
     // Generate answer in strict mode
     let answer = '';
     if (strict && snippets.length > 0) {
-      // Create a simple synthesis from top snippets
       const topSnippets = snippets.slice(0, 3);
-      const combinedText = topSnippets.map(s => s.text).join(' ');
-      
-      if (combinedText.length > 0) {
-        // Simple extraction-based answer
-        answer = generateStrictAnswer(query, combinedText);
-      }
+      answer = await generateAnswer(query, topSnippets, useLlm);
     }
     
     return {
@@ -110,7 +105,7 @@ export async function searchDocuments(
       answer,
       snippets
     };
-    
+
   } catch (error) {
     console.error('Search service error:', error);
     return {
@@ -118,6 +113,34 @@ export async function searchDocuments(
       answer: '',
       snippets: []
     };
+  }
+}
+
+async function generateAnswer(
+  query: string,
+  snippets: SearchSnippet[],
+  useLlm: boolean
+): Promise<string> {
+  const combinedText = snippets.map(s => s.text).join(' ');
+  if (combinedText.length === 0) return '';
+
+  if (!useLlm) {
+    return generateStrictAnswer(query, combinedText);
+  }
+
+  try {
+    const { data, error } = await supabase.functions.invoke('generate-answer', {
+      body: {
+        query,
+        snippets: snippets.map(s => s.text)
+      }
+    });
+
+    if (error) throw error;
+    return data.answer;
+  } catch (error) {
+    console.error('Error generating LLM answer:', error);
+    return generateStrictAnswer(query, combinedText);
   }
 }
 

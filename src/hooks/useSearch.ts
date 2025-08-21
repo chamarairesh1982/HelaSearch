@@ -5,6 +5,7 @@ import { SearchResult, SearchSnippet } from '@/lib/supabase';
 interface SearchSettings {
   strict: boolean;
   resultCount: number;
+  useLlm: boolean;
 }
 
 export function useSearch() {
@@ -16,7 +17,8 @@ export function useSearch() {
     try {
       const searchResult = await searchDocuments(query, {
         limit: settings.resultCount,
-        strict: settings.strict
+        strict: settings.strict,
+        useLlm: settings.useLlm
       });
       setResult(searchResult);
     } catch (error) {
