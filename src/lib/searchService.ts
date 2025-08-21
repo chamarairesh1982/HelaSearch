@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 import { SearchResult, SearchSnippet, TextChunk } from './supabase';
-import { expandContext } from './textProcessing';
+import { expandContext, normalizeText } from './textProcessing';
 
 // Cache to avoid recomputing embeddings for identical text
 const embeddingCache = new Map<string, number[]>();
@@ -29,19 +29,59 @@ async function getEmbedding(text: string): Promise<number[]> {
   }
 }
 
+// Basic Sinhala synonym lexicon
+const SINHALA_LEXICON: Record<string, string[]> = {
+  'බුද්ධ': ['බුදු', 'සම්බුදු'],
+  'ධර්මය': ['දහම', 'ධම්ම'],
+  'සංඝ': ['සංඝය', 'සමූහය'],
+  'භික්ෂු': ['බික්ෂු', 'සමණ'],
+};
+
+const SINHALA_SUFFIXES = ['යන්', 'යට', 'ය', 'ට', 'ගේ', 'ව', 'ක්'];
+
+function stemSinhala(word: string): string {
+  for (const suffix of SINHALA_SUFFIXES) {
+    if (word.endsWith(suffix) && word.length > suffix.length + 1) {
+      return word.slice(0, -suffix.length);
+    }
+  }
+  return word;
+}
+
+// Expand query with normalization, stemming and synonyms
+export function expandQuery(query: string): string {
+  const normalized = normalizeText(query);
+  const words = normalized.split(/\s+/).map(stemSinhala);
+  const expanded = new Set(words);
+
+  for (const word of words) {
+    const synonyms = SINHALA_LEXICON[word];
+    if (synonyms) {
+      synonyms.forEach((syn) => expanded.add(syn));
+    }
+  }
+
+  return Array.from(expanded).join(' ');
+}
+
 export async function searchDocuments(
   query: string,
   options: {
     limit?: number;
     strict?: boolean;
     useLlm?: boolean;
+    expandQuery?: boolean;
   } = {}
 ): Promise<SearchResult> {
-  const { limit = 8, strict = true, useLlm = false } = options;
+  const { limit = 8, strict = true, useLlm = false, expandQuery: shouldExpand = true } = options;
   
   try {
+    // Optionally expand the query and merge with original
+    const expanded = shouldExpand ? expandQuery(query) : '';
+    const mergedQuery = shouldExpand && expanded ? `${query} ${expanded}` : query;
+
     // Generate embedding for the query
-    const queryEmbedding = await getEmbedding(query);
+    const queryEmbedding = await getEmbedding(mergedQuery);
     
     // Search for similar chunks using vector similarity
     const { data: chunks, error } = await supabase.rpc('search_chunks', {

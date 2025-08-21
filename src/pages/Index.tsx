@@ -14,6 +14,7 @@ interface SearchSettings {
   strict: boolean;
   resultCount: number;
   useLlm: boolean;
+  expandQuery: boolean;
 }
 
 export default function Index() {
