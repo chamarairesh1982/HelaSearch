@@ -5,6 +5,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const deepseekApiKey = Deno.env.get('DEEPSEEK_API_KEY')
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -24,21 +26,42 @@ serve(async (req) => {
       )
     }
 
-    // For development, return a dummy embedding
-    // In production, you would call a real embedding service like:
-    // - Hugging Face Transformers.js
-    // - OpenAI Embeddings API
-    // - Local sentence-transformers model
-    
-    // Generate a consistent but dummy embedding based on text hash
-    const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))
-    const hashArray = Array.from(new Uint8Array(hash))
-    
-    // Create 384-dimensional embedding (matching multilingual-e5-base)
-    const embedding = Array(384).fill(0).map((_, i) => {
-      const seed = hashArray[i % hashArray.length]
-      return (seed / 255) * 2 - 1 // Normalize to [-1, 1]
+    if (!deepseekApiKey) {
+      return new Response(
+        JSON.stringify({ error: 'DeepSeek API key not configured' }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    // Call DeepSeek API for embeddings
+    const response = await fetch('https://api.deepseek.com/v1/embeddings', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${deepseekApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        input: text,
+        model: 'deepseek-embedder',
+      }),
     })
+
+    if (!response.ok) {
+      console.error('DeepSeek API error:', response.status, await response.text())
+      return new Response(
+        JSON.stringify({ error: 'Failed to generate embedding' }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    const data = await response.json()
+    const embedding = data.data[0].embedding
 
     return new Response(
       JSON.stringify({ embedding }),
@@ -48,6 +71,7 @@ serve(async (req) => {
     )
 
   } catch (error) {
+    console.error('Error generating embedding:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
