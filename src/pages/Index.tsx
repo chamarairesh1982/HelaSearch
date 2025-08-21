@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 interface SearchSettings {
   strict: boolean;
   resultCount: number;
+  useLlm: boolean;
 }
 
 export default function Index() {
